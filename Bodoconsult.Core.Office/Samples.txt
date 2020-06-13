@@ -1,0 +1,274 @@
+﻿The auto-fit logic is something which is implemented by Microsoft Excel, and is not a part of the OpenXML spreadsheet format. Auto-fit involves measuring the width (or height) of the value in each cell and finding the maximum value.
+
+In order to implement auto-fit in your own code, you will have to manually measure the text; you can use TextRenderer.MeasureText or Graphics.MeasureString with appropriate format flags (disable prefix characters). This will give you a size in pixels, which you will need to convert to Excel's convoluted column width units. The formula for this is:
+
+width = Truncate([{Number of Characters} * {Maximum Digit Width} + {5 pixel padding}]/{Maximum Digit Width}*256)/256
+
+Taken from this article: Column Class (DocumentFormat.OpenXml.Spreadsheet)
+
+(Maximum Digit Width can be determined by measuring the width of the '0' character using the workbook's default font - told you it was convoluted!)
+
+Once you have obtained the cell widths using this formula, you can find the maximum value and apply it to the Column.Width property.
+
+There are subtle differences in the way Microsoft Excel renders text (compared to how GDI/GDI+ does it), so this method is not 100% accurate - but it is sufficient for most purposes and you can always add some extra padding to ensure a proper fit.
+
+https://msdn.microsoft.com/en-AU/library/documentformat.openxml.spreadsheet.column(v=office.14).aspx
+
+
+
+This is my main method.
+    Template template = new Template();
+    template.CreatePackage("templatesource");
+
+    PresentationDocument doc = PresentationDocument.Open("templatesource", true);
+    PowerPoint powerPoint = new PowerPoint(doc, proj);
+    powerPoint.AddNewSlides();
+
+PowerPoint-class:
+public void addSlides()
+{
+    for (int i = 0; i < proj.projects.Capacity; i++  )
+    {
+        Console.WriteLine("Slide number: " + i);
+        AddNewSlide(_document.PresentationPart);
+    }
+    _document.PresentationPart.Presentation.Save();
+}
+
+private void AddNewSlide(PresentationPart parent)
+{
+    if (_slideTemplate == null) return;
+
+    var newSlidePart = parent.AddNewPart<SlidePart>("newSlide" + _slideId);
+
+    newSlidePart.FeedData(_slideTemplate.GetStream(FileMode.Open));
+    newSlidePart.AddPart(_slideTemplate.SlideLayoutPart, _slideTemplate.GetIdOfPart(_slideTemplate.SlideLayoutPart));
+
+    SetPlaceholder(newSlidePart, "#header#", "My new header");
+
+    newSlidePart.Slide.Save();
+
+    SlideIdList listOfSlidesIDs = parent.Presentation.SlideIdList;
+    uint maxSlideId = 1;
+
+    foreach (SlideId slideId in listOfSlidesIDs.ChildElements)
+    {
+        if (slideId.Id > maxSlideId) maxSlideId = slideId.Id;
+    }
+
+    SlideId newSlideId = new SlideId { Id = ++maxSlideId, RelationshipId = parent.GetIdOfPart(newSlidePart) };
+    listOfSlidesIDs.Append(newSlideId);
+
+    _slideId++;  
+
+
+
+
+	The article tells how to create PowerPoint presentation using PowerPoint template and Office OpenXML SDK 2.0. I assume the users have basic knowledge about Office OpenXML. 
+
+Background  
+
+To do so, first we need an existing PowerPoint template (*.potx file).  
+
+Using the code 
+
+
+1.Create a simple .potx file.
+
+Open Microsoft PowerPoint Presentation. The left panel contains a default slide, delete it. On the File menu, click Save As. In the File name box, type a name for your template, and then, in the Save as type box, select PowerPoint Template(*.potx). Let’s name this template as SimplePresentationTemplate.potx.
+2.Copy this template into a MemoryStream.
+
+Hide   Copy Code
+MemoryStream templateStream = null;             
+using (Stream stream = File.Open(“SimplePresentationTemplate.potx”, FileMode.Open, FileAccess.Read)) 
+{ 
+    templateStream = new MemoryStream((int)stream.Length); 
+    stream.Copy(templateStream);  
+    templateStream.Position = 0L; 
+}
+
+stream.Copy(templateStream) copies the FileStream into the MemoryStream. This is an extension method. 
+
+Hide   Copy Code
+public static void Copy(this Stream source, Stream target) 
+{ 
+    if (source != null) 
+    { 
+        MemoryStream mstream = source as MemoryStream; 
+        if (mstream != null) mstream.WriteTo(target); 
+        else 
+        { 
+            byte[] buffer = new byte[2048]; // this array length is sufficient for simple files 
+            int length = buffer.Length, size; 
+            while ((size = source.Read(buffer, 0, length)) != 0) 
+                target.Write(buffer, 0, size); 
+        } 
+    } 
+}
+3.Create presentation file using the stream.
+
+Hide   Copy Code
+using (PresentationDocument prstDoc = PresentationDocument.Open(templateStream, true)) 
+{ 
+        prstDoc.ChangeDocumentType(DocumentFormat.OpenXml.PresentationDocumentType.Presentation);
+        PresentationPart presPart = prstDoc.PresentationPart; 
+        presPart.PresentationPropertiesPart.AddExternalRelationship(
+          “http://schemas.openxmlformats.org/officeDocument/2006/" + 
+          "relationships/attachedTemplate”, 
+          new Uri((“SimplePresentationTemplate.potx”, UriKind.Absolute));
+        presPart.Presentation.Save(); 
+}
+4.Save the memory stream into a file:
+
+Hide   Copy Code
+File.WriteAllBytes(“PresentationFile1.pptx”, presentationStream.ToArray());
+
+That’s it.. The presentation file PresentationFile1.pptx got created without altering the template file.
+
+
+
+
+https://blogs.msdn.microsoft.com/brian_jones/2008/11/18/creating-a-presentation-report-based-on-data/
+
+
+protected void Page_Load(object sender, EventArgs e)
+        {
+            
+            InsertNewSlide(@"D:\PPTTEMPLATE\PPTTemplate.pptx", 1, "Title Only");
+        }
+public static void InsertNewSlide(string presentationFile, int position, string slideTitle)
+        {
+            // Open the source document as read/write. 
+            using (PresentationDocument presentationDocument = PresentationDocument.Open(presentationFile, true))
+            {
+                // Pass the source document and the position and title of the slide to be inserted to the next method.
+                InsertNewSlide(presentationDocument, position, slideTitle);
+            }
+        }
+ 
+public static void InsertNewSlide(PresentationDocument presentationDocument, int position, string slideTitle)
+        {
+ 
+            if (presentationDocument == null)
+            {
+                throw new ArgumentNullException("presentationDocument");
+            }
+ 
+            if (slideTitle == null)
+            {
+                throw new ArgumentNullException("slideTitle");
+            }
+ 
+            PresentationPart presentationPart = presentationDocument.PresentationPart;
+ 
+            // Verify that the presentation is not empty.
+            if (presentationPart == null)
+            {
+                throw new InvalidOperationException("The presentation document is empty.");
+            }
+ 
+            // Declare and instantiate a new slide.
+            Slide slide = new Slide(new CommonSlideData(new ShapeTree()));
+            uint drawingObjectId = 1;
+ 
+            // Construct the slide content.            
+            // Specify the non-visual properties of the new slide.
+            NonVisualGroupShapeProperties nonVisualProperties = slide.CommonSlideData.ShapeTree.AppendChild(new NonVisualGroupShapeProperties());
+            nonVisualProperties.NonVisualDrawingProperties = new NonVisualDrawingProperties() { Id = 1, Name = "" };
+            nonVisualProperties.NonVisualGroupShapeDrawingProperties = new NonVisualGroupShapeDrawingProperties();
+            nonVisualProperties.ApplicationNonVisualDrawingProperties = new ApplicationNonVisualDrawingProperties();
+ 
+            // Specify the group shape properties of the new slide.
+            slide.CommonSlideData.ShapeTree.AppendChild(new GroupShapeProperties());
+ 
+            // Declare and instantiate the title shape of the new slide.
+            Shape titleShape = slide.CommonSlideData.ShapeTree.AppendChild(new Shape());
+ 
+            drawingObjectId++;
+ 
+            // Specify the required shape properties for the title shape. 
+            titleShape.NonVisualShapeProperties = new NonVisualShapeProperties
+                (new NonVisualDrawingProperties() { Id = drawingObjectId, Name = "Title" },
+                new NonVisualShapeDrawingProperties(new Drawing.ShapeLocks() { NoGrouping = true }),
+                new ApplicationNonVisualDrawingProperties(new PlaceholderShape() { Type = PlaceholderValues.Title }));
+            titleShape.ShapeProperties = new ShapeProperties();
+ 
+            // Specify the text of the title shape.
+            titleShape.TextBody = new TextBody(new Drawing.BodyProperties(),
+                    new Drawing.ListStyle(),
+                    new Drawing.Paragraph(new Drawing.Run(new Drawing.Text() { Text = "hi" })));
+ 
+            // Declare and instantiate the body shape of the new slide.
+            Shape bodyShape = slide.CommonSlideData.ShapeTree.AppendChild(new Shape());
+            drawingObjectId++;
+ 
+            // Specify the required shape properties for the body shape.
+            bodyShape.NonVisualShapeProperties = new NonVisualShapeProperties(new NonVisualDrawingProperties() { Id = drawingObjectId, Name = "Content Placeholder" },
+                    new NonVisualShapeDrawingProperties(new Drawing.ShapeLocks() { NoGrouping = true }),
+                    new ApplicationNonVisualDrawingProperties(new PlaceholderShape() { Index = 1 }));
+            bodyShape.ShapeProperties = new ShapeProperties();
+ 
+            // Specify the text of the body shape.
+            bodyShape.TextBody = new TextBody(new Drawing.BodyProperties(),
+                    new Drawing.ListStyle(),
+                    new Drawing.Paragraph(new Drawing.Run(new Drawing.Text() { Text = "hi" })));
+            
+            // Create the slide part for the new slide.
+            SlidePart slidePart = presentationPart.AddNewPart<SlidePart>();
+ 
+            // Save the new slide part.
+            slide.Save(slidePart);
+ 
+            // Modify the slide ID list in the presentation part.
+            // The slide ID list should not be null.
+            SlideIdList slideIdList = presentationPart.Presentation.SlideIdList;
+ 
+            // Find the highest slide ID in the current list.
+            uint maxSlideId = 1;
+            SlideId prevSlideId = null;
+ 
+            foreach (SlideId slideId in slideIdList.ChildElements)
+            {
+                if (slideId.Id > maxSlideId)
+                {
+                    maxSlideId = slideId.Id;
+                }
+ 
+                position--;
+                if (position == 0)
+                {
+                    prevSlideId = slideId;
+                }
+ 
+            }
+ 
+            maxSlideId++;
+ 
+            // Get the ID of the previous slide.
+            SlidePart lastSlidePart;
+ 
+            if (prevSlideId != null)
+            {
+                lastSlidePart = (SlidePart)presentationPart.GetPartById(prevSlideId.RelationshipId);
+            }
+            else
+            {
+                lastSlidePart = (SlidePart)presentationPart.GetPartById(((SlideId)(slideIdList.ChildElements[0])).RelationshipId);
+            }
+ 
+            // Use the same slide layout as that of the previous slide.
+            if (null != lastSlidePart.SlideLayoutPart)
+            {
+                slidePart.AddPart(lastSlidePart.SlideLayoutPart);
+                
+            }
+            
+            // Insert the new slide into the slide list after the previous slide.
+            SlideId newSlideId = slideIdList.InsertAfter(new SlideId(), prevSlideId);
+            newSlideId.Id = maxSlideId;
+            newSlideId.RelationshipId = presentationPart.GetIdOfPart(slidePart);
+ 
+            // Save the modified presentation.
+            presentationPart.Presentation.Save();
+            
+        }

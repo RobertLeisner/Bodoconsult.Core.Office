@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="nunit" Version="3.11.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.11.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bodoconsult.Core.Office\Bodoconsult.Core.Office.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Bodoconsult.Core.Database">
+      <HintPath>..\Dependencies\Bodoconsult.Core.Database\Bodoconsult.Core.Database.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

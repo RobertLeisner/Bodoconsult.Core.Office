@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.902
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bodoconsult.Core.Office", "Bodoconsult.Core.Office\Bodoconsult.Core.Office.csproj", "{AD04069C-EE7A-499E-84A7-BB9A795F0612}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bodoconsult.Core.Office.Tests", "Bodoconsult.Core.Office.Tests\Bodoconsult.Core.Office.Tests.csproj", "{636441F5-A9E2-4168-A286-634541F5A38E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AD04069C-EE7A-499E-84A7-BB9A795F0612}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD04069C-EE7A-499E-84A7-BB9A795F0612}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD04069C-EE7A-499E-84A7-BB9A795F0612}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD04069C-EE7A-499E-84A7-BB9A795F0612}.Release|Any CPU.Build.0 = Release|Any CPU
+		{636441F5-A9E2-4168-A286-634541F5A38E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{636441F5-A9E2-4168-A286-634541F5A38E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{636441F5-A9E2-4168-A286-634541F5A38E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{636441F5-A9E2-4168-A286-634541F5A38E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {62B1B604-8443-42B4-BA96-21F2A3D1A8DD}
+	EndGlobalSection
+EndGlobal
