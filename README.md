@@ -9,6 +9,8 @@ It was developed with the intention to easily export database data to Excel spre
 The following code samples make usage of repository <https://github.com/RobertLeisner/Bodoconsult.Core.Database> for accessing Microsoft SqlServer database.
 The method GetDataTable used below returns a plain old System.Data.DataTable object.
 
+The source code contain NUnit test classes, the following source code is extracted from. The samples below show the most helpful use cases for the library.
+
 ## Use ExcelLateBinding class
 
 The ExcelLateBinding class uses COM late binding to export a DataTable (in the sample code the variable dt) to an Excel spreadsheet.
@@ -33,7 +35,7 @@ The ExcelLateBinding class uses COM late binding to export a DataTable (in the s
             excel.NumberFormat = "#,##0.00";
             excel.FillDataTable(dt, 4, 1);
 
-            execl.Dispose();
+            excel.Dispose();
 
 ## Use XlsxOpenXml class
 
