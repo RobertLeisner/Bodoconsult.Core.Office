@@ -15,6 +15,7 @@ The source code contain NUnit test classes, the following source code is extract
 
 The ExcelLateBinding class uses COM late binding to export a DataTable (in the sample code the variable dt) to an Excel spreadsheet.
 
+``` csharp
 
             var db = SqlClientConnManager.GetConnManager("Data Source=.\\SQLEXPRESS;Initial Catalog=MediaDb;Integrated Security=True");
             var dt = db.GetDataTable("select top 1000 * from settings");
@@ -37,9 +38,13 @@ The ExcelLateBinding class uses COM late binding to export a DataTable (in the s
 
             excel.Dispose();
 
+```
+
 ## Use XlsxOpenXml class
 
 The XlsxOpenXml class writes the content of a DataTable (in the sample code the variable dt) directly to an OpenXml spreadsheet file.
+
+``` csharp
 
             var db = SqlClientConnManager.GetConnManager("Data Source=.\\SQLEXPRESS;Initial Catalog=MediaDb;Integrated Security=True");
             var dt = db.GetDataTable("select top 1000 * from settings");
@@ -60,6 +65,7 @@ The XlsxOpenXml class writes the content of a DataTable (in the sample code the 
 
             oe.Quit();
 
+```
 
 # About us
 
