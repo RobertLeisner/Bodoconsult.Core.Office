@@ -1,3 +1,6 @@
+// Copyright (c) Bodoconsult EDV-Dienstleistungen GmbH. All rights reserved.
+
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -817,7 +820,7 @@ namespace Bodoconsult.Core.Office
             try
             {
                 //Return control of Excel to the user.
-                _wb.Close();
+                _wb.Dispose();
             }
             catch (Exception ex)
             {

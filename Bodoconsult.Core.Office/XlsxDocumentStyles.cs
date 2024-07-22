@@ -1,4 +1,7 @@
-﻿using DocumentFormat.OpenXml;
+﻿// Copyright (c) Bodoconsult EDV-Dienstleistungen GmbH. All rights reserved.
+
+
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Color = DocumentFormat.OpenXml.Spreadsheet.Color;

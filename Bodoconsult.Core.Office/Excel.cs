@@ -1,6 +1,10 @@
+// Copyright (c) Bodoconsult EDV-Dienstleistungen GmbH. All rights reserved.
+
+
 using System;
 using System.Data;
 using System.Reflection;
+using System.Runtime.Versioning;
 
 namespace Bodoconsult.Core.Office
 {
@@ -10,6 +14,7 @@ namespace Bodoconsult.Core.Office
     /// <summary>
     /// A helper class for late binding Microsoft (R) Excel via COM 
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class ExcelLateBinding: IDisposable
     {
 

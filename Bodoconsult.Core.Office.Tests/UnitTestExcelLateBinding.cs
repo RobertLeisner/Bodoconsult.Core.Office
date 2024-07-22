@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using Bodoconsult.Core.Database;
 using NUnit.Framework;
 
 namespace Bodoconsult.Core.Office.Tests
 {
     [TestFixture]
+    [SupportedOSPlatform("windows")]
     public class UnitTestExcelLateBinding
     {
         [Test]
